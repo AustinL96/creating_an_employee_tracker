@@ -132,7 +132,7 @@ let startPrompt = function () {
                     },
                     {
                       name: "eManager",
-                      message: "Who is the employee's manager?",
+                      message: "Who is the employee's manager? (Select NULL if no manager)",
                       type: "list",
                       choices: managerChoices
                     }
@@ -165,6 +165,37 @@ let startPrompt = function () {
                   });
                 });
               });
+        } else if (answersObj.prompt === "Update An Employee Role") {
+            db.query('SELECT CONCAT(first_name, " ", last_name) AS name FROM employee', (err, result) => {
+                if (err) throw err;
+                const employeeChoice = result.map(employee => employee.name);
+                db.query('SELECT * FROM role', (err, result) => {
+                    if (err) throw err;
+                    const roleChoices = result.map(role => role.title);
+                    inquirer.prompt([
+                        {
+                            name: "empName",
+                            message: "Select an employee you would like to update",
+                            type: "list",
+                            choices: employeeChoice
+                        },
+                        {
+                            name: "newRole",
+                            message: "What is the employee's new role?",
+                            type: "list",
+                            choices: roleChoices
+                        }
+                    ]).then((updAnswer) => {
+                        const empName = updAnswer.empName;
+                        const roleId = result.find(role => role.title === updAnswer.newRole).id;
+                        db.query(`UPDATE employee SET role_id = ${roleId} WHERE CONCAT(first_name, " ", last_name) = '${empName}'`, (err, result) => {
+                            if (err) throw err;
+                            console.log(`***Employee ${empName} has been updated***`);
+                            startPrompt();
+                        });
+                    });
+                });
+            });
         } else if (answersObj.prompt === "Exit") {
             db.end();
             console.log('***EXITING DATABASE***');
@@ -173,3 +204,4 @@ let startPrompt = function () {
         console.log(err);
     });
 };
+
