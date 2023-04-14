@@ -11,14 +11,6 @@ db.connect(function(err) {
     startPrompt();
 });
 
-//***console logs data for me to test */
-// db.query('SELECT CONCAT(first_name, " ", last_name) AS name FROM employee', (err, result) => {
-//     if (err) throw err;
-//     const managerChoices = result.map(employee => employee.name);
-//     managerChoices.push("NULL");
-//     console.log(managerChoices);
-// })
-
 //***BEGINS PROMPT */
 let startPrompt = function () {
     inquirer.prompt({
@@ -36,6 +28,7 @@ let startPrompt = function () {
             "Exit"
         ]
     }).then((answersObj) => {
+
         //***ALLOWS USER TO VIEW DEPARTMENTS */
         if (answersObj.prompt === "View All Departments") {
             db.query('SELECT * FROM department', (err, result) => {
@@ -44,22 +37,25 @@ let startPrompt = function () {
                 console.table(result);
                 startPrompt();
             });
+
         //***ALLOWS USER TO VIEW ROLES */
         } else if (answersObj.prompt === "View All Roles") {
-            db.query('SELECT * FROM role', (err, result) => {
+            db.query(`SELECT role.title AS "Role Title", department.name AS "Department Name", role.salary AS "Salary" FROM role JOIN department ON role.department_id = department.id;`, (err, result) => {
                 if (err) throw err;
                 console.log('***Viewing all roles!***');
                 console.table(result);
                 startPrompt();
             });
+
         //***ALLOWS USER TO VIEW EMPLOYEES */
         } else if (answersObj.prompt === "View All Employees") {
-            db.query('SELECT * FROM employee', (err, result) => {
+            db.query(`SELECT CONCAT(e.first_name, ' ', e.last_name) AS Name, r.title AS Role, CONCAT(m.first_name, ' ', m.last_name) AS Manager FROM employee e JOIN role r ON e.role_id = r.id LEFT JOIN employee m ON e.manager_id = m.id`, (err, result) => {
                 if (err) throw err;
                 console.log('***Viewing all employees!***');
                 console.table(result);
                 startPrompt();
-            });
+              });
+
         //***ALLOWS USER TO ADD A DEPARTMENT */
         } else if (answersObj.prompt === "Add A Department") {
            inquirer.prompt(
@@ -75,6 +71,7 @@ let startPrompt = function () {
                     startPrompt();
                 });
             });
+
         //***ALLOWS USER TO ADD A ROLE */
         } else if (answersObj.prompt === "Add A Role") {
             db.query('SELECT * FROM department', (err, result) => {
@@ -106,6 +103,7 @@ let startPrompt = function () {
                     });
                 });
             });
+
         //***ALLOWS USER TO ADD AN EMPLOYEE */
         } else if (answersObj.prompt === "Add An Employee") {
             db.query('SELECT * FROM role', (err, result) => {
@@ -165,6 +163,8 @@ let startPrompt = function () {
                   });
                 });
               });
+
+        //***ALLOWS USER TO UPDATE AN EMPLOYEE'S ROLE */
         } else if (answersObj.prompt === "Update An Employee Role") {
             db.query('SELECT CONCAT(first_name, " ", last_name) AS name FROM employee', (err, result) => {
                 if (err) throw err;
@@ -196,7 +196,9 @@ let startPrompt = function () {
                     });
                 });
             });
-        } else if (answersObj.prompt === "Exit") {
+            
+        //***ALLOWS USER TO EXIT DATABASE */
+    } else if (answersObj.prompt === "Exit") {
             db.end();
             console.log('***EXITING DATABASE***');
         }

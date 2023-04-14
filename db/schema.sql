@@ -1,7 +1,4 @@
--- Schema should contain the following 3 tables
--- Deparment
--- -id: INT PRIMARY KEY
--- -name: VARCHAR(30) to hold department name
+
 DROP DATABASE IF EXISTS company_db;
 CREATE DATABASE company_db;
 
@@ -12,13 +9,12 @@ CREATE TABLE department (
     name VARCHAR(30)
 );
 
-
 CREATE TABLE role (
     id INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(30),
     salary DECIMAL,
-    department_id INT
-    FOREIGN KEY (department_id) REFERENCES department(id) ON DELETE SET NULL
+    department_id INT,
+    FOREIGN KEY (department_id) REFERENCES department(id)
 );
 
 CREATE TABLE employee (
