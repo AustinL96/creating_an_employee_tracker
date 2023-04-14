@@ -1,22 +1,27 @@
 -- used to populate the database tables for the development of individual features
 
-INSERT INTO department (id, name)
-VALUES (1, "Financing"),
-       (2, "Human Resources"),
-       (3, "Security"),
-       (4, "Research"),
-       (5, "Development");
+INSERT INTO department (name)
+VALUES ("Financing"),
+       ("Legal"),
+       ("Security"),
+       ("Maintenance");
        
-INSERT INTO role (id, title, salary, department_id)
-VALUES (1, "Security Guard", 20000, 3),
-       (2, "Manager", 50000, 1),
-       (3, "Scientist", 45000, 4),
-       (4, "Technician", 30000, 5),
-       (5, "Janitor", 22000, 4);
+INSERT INTO role (title, salary, department_id)
+VALUES ("Security Guard", 40000, 3),
+       ("Lawyer", 100000, 2),
+       ("Accountant", 80000, 1),
+       ("Technician", 90000, 4),
+       ("Salesperson", 70000, 1),
+       ("Manager", 90000, 1);
 
-INSERT INTO employee (id, first_name, last_name, role_id, manager_id)
-VALUES (1, "Austin", "Lewis", 4, 3),
-       (2, "John", "Smith", 5, null),
-       (3, "Enrico", "Pucci", 2, null),
-       (4, "Constantin", "Valdor", 1, null),
-       (5, "Ferrus", "Manus", 3, 3);
+INSERT INTO employee (first_name, last_name, role_id, manager_id)
+VALUES ("John", "Johnson", 1, NULL),
+    ("Paul", "Paulson", 3, 5),
+    ("Ron", "Ronson", 4, NULL),
+    ("Kat", "Katson", 2, NULL),
+    ("Dalila", "Dolph", 6, NULL),
+    ("Daniela", "Ferdi", 5, 5),
+    ("Eva", "Mwangi", 5, 5),
+    ("Arlo", "Suzi", 3, 5),
+    ("Jesse", "Shakil", 2, NULL);
+
