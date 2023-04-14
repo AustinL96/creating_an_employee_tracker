@@ -1,30 +1,25 @@
-//*** INQUIRER OPTIONS */
-/*VIEW ALL DEPARTMENTS (shown a formatted table showing department names and ids,
-
-VIEW ALL ROLES (shown job title, role id, department they belong to, and salary),
-
-VIEW ALL EMPLOYEES (shown a formatted table showing employee data: ids, first names, last names, job titles, departments, salaries, and managers they repot to),
-
-ADD A DEPARTMENT (when chosen, prompted to enter the name of the department and that department is added to the database),
-
-ADD A ROLE (when chosen, prompted to enter the name, salary, and department for the role and that is added to the database), 
-
-ADD AN EMPLOYEE (when chosen, prompted to enter the exployee's first name, last name, role, manager, and that employee is added to the database),
-
-UPDATE AN EMPLOYEE ROLE (when chosen, prompted to select an employee to update and their new role and this ifnromation is updated in the database)*/
-
 const inquirer = require("inquirer");
 const path = require('path');
 const mysql = require('mysql2');
 const cTable = require('console.table');
 const db = require('./db/connection');
 
+//***CONNECTS TO DATABASE */
 db.connect(function(err) {
     if (err) throw err;
     console.log('***Database connected!***');
     startPrompt();
 });
 
+//***console logs data for me to test */
+// db.query('SELECT CONCAT(first_name, " ", last_name) AS name FROM employee', (err, result) => {
+//     if (err) throw err;
+//     const managerChoices = result.map(employee => employee.name);
+//     managerChoices.push("NULL");
+//     console.log(managerChoices);
+// })
+
+//***BEGINS PROMPT */
 let startPrompt = function () {
     inquirer.prompt({
         type: "list",
@@ -41,6 +36,7 @@ let startPrompt = function () {
             "Exit"
         ]
     }).then((answersObj) => {
+        //***ALLOWS USER TO VIEW DEPARTMENTS */
         if (answersObj.prompt === "View All Departments") {
             db.query('SELECT * FROM department', (err, result) => {
                 if (err) throw err;
@@ -48,6 +44,7 @@ let startPrompt = function () {
                 console.table(result);
                 startPrompt();
             });
+        //***ALLOWS USER TO VIEW ROLES */
         } else if (answersObj.prompt === "View All Roles") {
             db.query('SELECT * FROM role', (err, result) => {
                 if (err) throw err;
@@ -55,6 +52,7 @@ let startPrompt = function () {
                 console.table(result);
                 startPrompt();
             });
+        //***ALLOWS USER TO VIEW EMPLOYEES */
         } else if (answersObj.prompt === "View All Employees") {
             db.query('SELECT * FROM employee', (err, result) => {
                 if (err) throw err;
@@ -62,6 +60,7 @@ let startPrompt = function () {
                 console.table(result);
                 startPrompt();
             });
+        //***ALLOWS USER TO ADD A DEPARTMENT */
         } else if (answersObj.prompt === "Add A Department") {
            inquirer.prompt(
             {
@@ -76,6 +75,7 @@ let startPrompt = function () {
                     startPrompt();
                 });
             });
+        //***ALLOWS USER TO ADD A ROLE */
         } else if (answersObj.prompt === "Add A Role") {
             db.query('SELECT * FROM department', (err, result) => {
                 if (err) throw err;
@@ -106,6 +106,65 @@ let startPrompt = function () {
                     });
                 });
             });
+        //***ALLOWS USER TO ADD AN EMPLOYEE */
+        } else if (answersObj.prompt === "Add An Employee") {
+            db.query('SELECT * FROM role', (err, result) => {
+                if (err) throw err;
+                const roleChoices = result.map(role => role.title);
+                db.query('SELECT CONCAT(first_name, " ", last_name) AS name FROM employee', (err, result) => {
+                  if (err) throw err;
+                  const managerChoices = result.map(employee => employee.name);
+                  managerChoices.push("NULL");
+                  inquirer.prompt([
+                    {
+                      name: "firstName",
+                      message: "What is the employee's first name?"
+                    },
+                    {
+                      name: "lastName",
+                      message: "What is the employee's last name?"
+                    },
+                    {
+                      name: "eRole",
+                      message: "What is the employee's role?",
+                      type: "list",
+                      choices: roleChoices
+                    },
+                    {
+                      name: "eManager",
+                      message: "Who is the employee's manager?",
+                      type: "list",
+                      choices: managerChoices
+                    }
+                  ]).then((empAnswer) => {
+                    const newFirstName = empAnswer.firstName;
+                    const newLastName = empAnswer.lastName;
+                    const newRole = empAnswer.eRole;
+                    const newManager = empAnswer.eManager;
+                        db.query(`SELECT id FROM role WHERE title = '${newRole}'`, (err, result) => {
+                        if (err) throw err;
+                        const roleId = result[0].id;
+                            //***IF NO MANAGER IS SELECTED, SETS DEFAULT VALUE OF NULL */
+                            if (newManager === "NULL") {
+                                db.query(`INSERT INTO employee (first_name, last_name, role_id) VALUES ('${newFirstName}', '${newLastName}', ${roleId})`, (err, result) => {
+                                if (err) throw err;
+                                console.log(`***Employee ${newFirstName} ${newLastName} has been added***`);
+                                startPrompt();
+                                });
+                            //***OTHERWISE, ADDS ALL NEW INFO TO DATABASE */
+                            } else db.query(`SELECT id FROM employee WHERE CONCAT(first_name, " ", last_name) = '${newManager}'`, (err, result) => {
+                                if (err) throw err;
+                                const managerId = result[0].id;
+                                    db.query(`INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ('${newFirstName}', '${newLastName}', ${roleId}, ${managerId})`, (err, result) => {
+                                    if (err) throw err;
+                                    console.log(`***Employee ${newFirstName} ${newLastName} has been added***`);
+                                    startPrompt();
+                                    });
+                            });
+                    });
+                  });
+                });
+              });
         } else if (answersObj.prompt === "Exit") {
             db.end();
             console.log('***EXITING DATABASE***');
